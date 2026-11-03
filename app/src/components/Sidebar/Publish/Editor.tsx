@@ -21,12 +21,16 @@ function Editor(props: {
     showLineNumbers: false,
     tabSize: 2,
   }
+  const mode = props.editorMode === 'json' || props.editorMode === 'xml' ? props.editorMode : 'text'
+  const placeholder = props.editorMode === 'hex' ? '01 02 FF   or   0x01 0x02 0xFF' : undefined
 
   return (
     <AceEditor
       ref={props.editorRef}
       style={{}}
-      mode={props.editorMode}
+      mode={mode}
+      placeholder={placeholder}
+      wrapEnabled={props.editorMode === 'hex'}
       theme={theme.palette.mode === 'dark' ? 'monokai' : 'dawn'}
       name="UNIQUE_ID_OF_DIV"
       width="100%"

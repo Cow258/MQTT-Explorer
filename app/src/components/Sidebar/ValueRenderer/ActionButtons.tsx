@@ -11,6 +11,7 @@ import { connect } from 'react-redux'
 import { AppState } from '../../../reducers'
 import { settingsActions } from '../../../actions'
 import { ValueRendererDisplayMode } from '../../../reducers/Settings'
+import { BinaryIcon } from './BinaryIcon'
 
 function ActionButtons(props: {
   actions: { settings: typeof settingsActions }
@@ -47,6 +48,14 @@ function ActionButtons(props: {
           <span className={props.classes.buttonContent}>
             <Reorder className={props.classes.toggleButtonIcon} />
             <span className={props.classes.buttonText}>Raw</span>
+          </span>
+        </Tooltip>
+      </ToggleButton>
+      <ToggleButton className={props.classes.toggleButton} value="hex" id="valueRendererDisplayMode-hex">
+        <Tooltip title="Show payload bytes as hexadecimal">
+          <span className={props.classes.buttonContent}>
+            <BinaryIcon className={props.classes.toggleButtonIcon} />
+            <span className={props.classes.buttonText}>Hex</span>
           </span>
         </Tooltip>
       </ToggleButton>
