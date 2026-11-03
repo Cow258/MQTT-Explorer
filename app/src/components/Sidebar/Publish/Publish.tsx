@@ -11,6 +11,7 @@ import PublishHistory from './PublishHistory'
 import RetainSwitch from './RetainSwitch'
 import TopicInput from './TopicInput'
 import { AppState } from '../../../reducers'
+import { Base64Message } from '../../../../../backend/src/Model/Base64Message'
 import { EditorModeSelect } from './EditorModeSelect'
 import { globalActions, publishActions } from '../../../actions'
 import { KeyCodes } from '../../../utils/KeyCodes'
@@ -53,11 +54,20 @@ function Publish(props: Props) {
       return
     }
 
+    if (props.editorMode === 'hex' && props.payload) {
+      try {
+        Base64Message.fromHex(props.payload)
+      } catch (error) {
+        props.globalActions.showError(error instanceof Error ? error.message : 'Invalid hex payload')
+        return
+      }
+    }
+
     props.actions.publish(props.connectionId)
 
     const topic = props.topic || ''
     const { payload } = props
-    if (props.connectionId && topic) {
+    if (topic) {
       amendToHistory(topic, payload)
     }
   }, [props, props.connectionId, props.topic, props.payload, amendToHistory])

@@ -71,22 +71,38 @@ export const setEditorMode = (editorMode: string): Action => ({
   type: ActionTypes.PUBLISH_SET_EDITOR_MODE,
 })
 
-export const publish = (connectionId: string) => (dispatch: Dispatch<Action>, getState: () => AppState) => {
+export const publish = (connectionId: string) => (dispatch: Dispatch<any>, getState: () => AppState) => {
   const state = getState()
   const topic = state.publish.manualTopic ?? state.tree.get('selectedTopic')?.path()
 
   if (!topic) {
-    return
+    return false
   }
 
   const publishEvent = makePublishEvent(connectionId)
+  let payload: Base64Message | null = null
+  if (state.publish.payload) {
+    if (state.publish.editorMode === 'hex') {
+      try {
+        payload = Base64Message.fromHex(state.publish.payload)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Invalid hex payload'
+        dispatch(showError(message))
+        return false
+      }
+    } else {
+      payload = Base64Message.fromString(state.publish.payload)
+    }
+  }
+
   const mqttMessage: Partial<MqttMessage> = {
     topic,
-    payload: state.publish.payload ? Base64Message.fromString(state.publish.payload) : null,
+    payload,
     retain: state.publish.retain,
     qos: state.publish.qos,
   }
   rendererEvents.emit(publishEvent, mqttMessage)
+  return true
 }
 
 export const toggleRetain = (): Action => ({

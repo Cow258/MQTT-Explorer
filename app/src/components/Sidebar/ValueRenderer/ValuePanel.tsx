@@ -5,6 +5,7 @@ import { Theme } from '@mui/material/styles'
 import { withStyles } from '@mui/styles'
 import { connect } from 'react-redux'
 import * as q from '../../../../../backend/src/Model'
+import { Base64Message } from '../../../../../backend/src/Model/Base64Message'
 import ActionButtons from './ActionButtons'
 import Copy from '../../helper/Copy'
 import Save from '../../helper/Save'
@@ -14,6 +15,7 @@ import Panel from '../Panel'
 import ValueRenderer from './ValueRenderer'
 import { AppState } from '../../../reducers'
 import { sidebarActions } from '../../../actions'
+import { ValueRendererDisplayMode } from '../../../reducers/Settings'
 import DeleteSelectedTopicButton from './DeleteSelectedTopicButton'
 import { MessageId } from '../MessageId'
 import { useDecoder } from '../../hooks/useDecoder'
@@ -24,6 +26,7 @@ interface Props {
   classes: any
   lastUpdate: number
   compareMessage?: q.Message
+  valueRendererDisplayMode: ValueRendererDisplayMode
 }
 
 function RenderedValue(props: { node?: q.TreeNode<any>; compareMessage?: q.Message }) {
@@ -58,10 +61,12 @@ function ValuePanel(props: Props) {
     )
   }
 
-  const getDecodedValue = useCallback(
-    () => node?.message && decodeMessage(node.message)?.message?.toUnicodeString(),
-    [node, decodeMessage]
-  )
+  const getDecodedValue = useCallback(() => {
+    if (props.valueRendererDisplayMode === 'hex' && node?.message?.payload) {
+      return Base64Message.toHex(node.message.payload, 16)
+    }
+    return node?.message && decodeMessage(node.message)?.message?.toUnicodeString()
+  }, [node, decodeMessage, props.valueRendererDisplayMode])
 
   const getData = () => {
     if (node?.message && node.message.payload) {
@@ -132,6 +137,7 @@ const mapDispatchToProps = (dispatch: any) => ({
 const mapStateToProps = (state: AppState) => ({
   node: state.tree.get('selectedTopic'),
   compareMessage: state.sidebar.get('compareMessage'),
+  valueRendererDisplayMode: state.settings.get('valueRendererDisplayMode'),
 })
 
 const styles = (theme: Theme) => ({

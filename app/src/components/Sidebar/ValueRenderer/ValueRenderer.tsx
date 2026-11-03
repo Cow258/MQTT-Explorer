@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { connect } from 'react-redux'
 import { Fade } from '@mui/material'
 import { Decoder } from '../../../../../backend/src/Model/Decoder'
+import { Base64Message } from '../../../../../backend/src/Model/Base64Message'
 import * as q from '../../../../../backend/src/Model'
 import CodeDiff from '../CodeDiff'
 import { AppState } from '../../../reducers'
@@ -90,6 +91,13 @@ export const ValueRenderer: React.FC<Props> = ({ treeNode, compareWith: compare,
     () => decodeMessage(compareMessage)?.message?.format(treeNode.type) ?? [],
     [compareMessage, decodeMessage, treeNode.type]
   )
+  const currentHex = useMemo(() => (message.payload ? Base64Message.toHex(message.payload, 16) : ''), [message])
+  const compareHex = useMemo(() => {
+    if (!compareMessage || compareMessage === message || !compareMessage.payload) {
+      return ''
+    }
+    return Base64Message.toHex(compareMessage.payload, 16)
+  }, [compareMessage, message])
 
   function renderValue(
     treeNode: q.TreeNode<TopicViewModel>,
@@ -107,6 +115,8 @@ export const ValueRenderer: React.FC<Props> = ({ treeNode, compareWith: compare,
     switch (renderMode) {
       case 'diff':
         return renderDiffMode(treeNode, currentStr, compareStr, currentType, compareType, compareWithPreviousMessage)
+      case 'hex':
+        return renderRawMode(treeNode, currentHex, compareHex, undefined, undefined, compareWithPreviousMessage)
       default:
         return renderRawMode(treeNode, currentStr, compareStr, currentType, compareType, compareWithPreviousMessage)
     }
@@ -115,7 +125,18 @@ export const ValueRenderer: React.FC<Props> = ({ treeNode, compareWith: compare,
   const renderedValue = useMemo(
     () =>
       renderValue(treeNode, currentStr, compareStr, currentType, compareType, renderMode, compareWithPreviousMessage),
-    [treeNode, currentStr, compareStr, currentType, compareType, renderMode, compareWithPreviousMessage]
+    [
+      treeNode,
+      currentStr,
+      compareStr,
+      currentType,
+      compareType,
+      renderMode,
+      compareWithPreviousMessage,
+      currentHex,
+      compareHex,
+      decodedMessage,
+    ]
   )
 
   return (
